@@ -1,0 +1,40 @@
+---
+title: "Part 1"
+author: "YOUR NAME"
+output: 
+  html_document:
+    code_folding: hide
+    df_print: paged
+    theme: sandstone
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+library(tidyverse)
+library(lubridate)
+
+```
+
+Template file. Code will be included in folded blocks in the output to facilitate grading. Please knit this file and commit both the rmd and the html output. If you add external files to your analysis, please commit them to the files folder in this repository. NOTE: please do not commit large (15MB+) files to GitHub. Instead please denote the origin of the files in your code. 
+
+```{r}
+#example connection to database. note that you have to download the database from onedrive
+
+con <- DBI::dbConnect(RSQLite::SQLite(), "database/detroit.sqlite")
+
+# sales tbl
+
+dplyr::tbl(con, 'sales')
+
+# convert to tibble
+#dplyr::tbl(con, 'sales') %>% dplyr::collect()
+
+# sql query
+
+dplyr::tbl(con, 'sales') %>% count(year(sale_date))
+
+#dplyr::tbl(con, 'sales') %>% count(year(sale_date)) %>% show_query()
+
+```
+
+
