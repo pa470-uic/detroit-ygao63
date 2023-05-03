@@ -1,0 +1,84 @@
+---
+title: "Part 1"
+author: "Yaze Gao"
+output: 
+  html_document:
+    code_folding: hide
+    df_print: paged
+    theme: sandstone
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+library(tidyverse)
+library(lubridate)
+
+```
+
+Template file. Code will be included in folded blocks in the output to facilitate grading. Please knit this file and commit both the rmd and the html output. If you add external files to your analysis, please commit them to the files folder in this repository. NOTE: please do not commit large (15MB+) files to GitHub. Instead please denote the origin of the files in your code. 
+
+```{r}
+#example connection to database. note that you have to download the database from onedrive
+
+con <- DBI::dbConnect(RSQLite::SQLite(), "database/detroit.sqlite")
+
+# sales tbl
+
+dplyr::tbl(con, 'sales')
+
+# convert to tibble
+#dplyr::tbl(con, 'sales') %>% dplyr::collect()
+
+# sql query
+
+dplyr::tbl(con, 'sales') %>% count(year(sale_date))
+
+#dplyr::tbl(con, 'sales') %>% count(year(sale_date)) %>% show_query()
+
+```
+con <- DBI::dbConnect(RSQLite::SQLite(), "detroit.sqlite")
+
+dplyr::tbl(con, 'sales')
+sales <- dplyr::tbl(con, 'sales') %>% dplyr::collect()
+
+
+dplyr::tbl(con, 'assessments')
+assessments <- dplyr::tbl(con, 'assessments') %>% dplyr::collect()
+
+dplyr::tbl(con, 'foreclosures')
+foreclosures <- dplyr::tbl(con, 'foreclosures') %>% dplyr::collect()
+
+# Seation A
+sales_trend <- sales %>%
+  group_by(sale_date) %>%
+  summarise(max(sale_price))
+
+assessments_trend <- assessments %>%
+  group_by(year) %>%
+  summarise(mean(ASSESSEDVALUE))
+
+# B
+
+
+df <- merge(sales, assessments, by.x = c("parcel_num", "year"), by.y = c("PARCELNO", "year"))
+devtools::install_github("cmf-uchicago/cmfproperty")
+
+ratios <-
+  cmfproperty::reformat_data(
+    df,
+    sale_col = "sale_price",
+    assessment_col = "ASSESSEDVALUE",
+    sale_year_col = "sale_date",
+  )
+
+cmfproperty::make_report(ratios, 
+                         jurisdiction_name = "Detroit",
+                         output_dir = "~/Desktop/database/")
+
+#C
+mod1<-lm (sale_price ~ sale_date,data=sales)
+
+#D
+mod1<-lm (ASSESSEDVALUE ~ year,data=assessments)
+
+
